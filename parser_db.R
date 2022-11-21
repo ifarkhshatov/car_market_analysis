@@ -30,7 +30,10 @@ for (brand in c(1:nrow(check_data))) {
       html_elements('.navia') %>% html_text2()
     # if there only 1 page, then we set to loop only first page.
     page_num <- ifelse(identical(page_num,character(0)), 1, page_num)
-    
+# need to add link to ads 
+# date of publishing
+# vin, plate
+# something else (phone maybe)    
     if (page_num != page) {
       break
     } else {
@@ -47,6 +50,19 @@ for (brand in c(1:nrow(check_data))) {
       total_data <- bind_rows(total_data, t_data)
       rm(t_data)
     }
-
   }
 }
+
+#make data great again
+total_data_parsed <- total_data %>%
+  mutate(Cena = str_replace_all(Cena, c(" " = "", "€" = "", "," = "")) %>% as.numeric(),
+         `Nobrauk.` = str_replace_all(`Nobrauk.`, c("tūkst." = "000", " " ="", "-"= NA,","="")) %>% as.numeric(),
+         Gads = Gads %>% as.numeric())
+
+write.csv(
+  x = total_data_parsed,
+  file = "ss.csv",
+  fileEncoding = "UTF-8",
+  na = "",
+  row.names = FALSE
+)
