@@ -1,0 +1,7 @@
+https://unpkg.com/chartjs-chart-geo@1.1.4/build/Chart.Geo.min.js
+
+https://unpkg.com/chart.js@2.9.3/dist/Chart.min.js
+
+https://unpkg.com/chartjs-plugin-datalabels
+
+http://techslides.com/demos/country-capitals.json
