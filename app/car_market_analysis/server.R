@@ -20,8 +20,10 @@ shinyServer(function(input, output, session) {
   output$car_model <- renderUI({
     # waiting until first one is generated
     req(input$car_brand)
+    input$car_brand
 
     if (input$car_brand == "All") {
+      
       choices = "All"
     } else {
       choices = c("All", unique(total_data_parsed$Modelis[total_data_parsed$brand %in% input$car_brand]))
@@ -36,7 +38,9 @@ shinyServer(function(input, output, session) {
   # observe(print(input$car_model))
   #YEAR RANGE SLIDER
   output$year_range <- renderUI({
+    
     req(input$car_brand)
+    input$car_brand
     if (input$car_brand != "All") {
       min_year <- min(as.integer(total_data_parsed$Gads[total_data_parsed$brand %in% input$car_brand]))
       max_year <- max(as.integer(total_data_parsed$Gads[total_data_parsed$brand %in% input$car_brand]))
@@ -68,32 +72,44 @@ shinyServer(function(input, output, session) {
     req(input$car_model)
     req(input$year_range)
     
+    # creat heat map
+    
+    fun_color_range <- colorRampPalette(c("blue", "red"))
+    color <- data.frame( 
+      odo = seq(min(total_data_parsed$Nobrauk., na.rm = TRUE),
+                max(total_data_parsed$Nobrauk., na.rm = TRUE), by = 100000)) 
+    color$color <- fun_color_range(nrow(color))
+    
+    options(dplyr.summarise.inform = FALSE)
     if (input$car_brand == "All") {
-      # creat heat map
-      
-      fun_color_range <- colorRampPalette(c("green", "red"))
-      color <- data.frame( 
-        odo = seq(min(total_data_parsed$Nobrauk., na.rm = TRUE),
-                  max(total_data_parsed$Nobrauk., na.rm = TRUE), by = 100000)) 
-      color$color <- fun_color_range(nrow(color))
-      
-      
+
       df <- total_data_parsed %>%
         filter(Gads %in% seq(input$year_range[1], input$year_range[2])) %>%
-        select(odo = `Nobrauk.`, year = Gads, price = Cena) %>%
+        select(odo = `Nobrauk.`, year = Gads, price = Cena, model = Modelis, brand) %>%
+        group_by(brand, model, year) %>%
+        summarise(price = mean(price), odo = mean(odo)) %>%
+        ungroup() %>%
         mutate(color =  color$color[findInterval(odo, color$odo)])
 
     } else {
-      models <-
-        ifelse(input$car_model == "All",
-               unique(total_data_parsed$Modelis),
-               input$car_model)
+       if(input$car_model == "All") {
+         models <- unique(total_data_parsed$Modelis)
+       } else {
+         models <- input$car_model
+       }
+      
       df <- total_data_parsed  %>%
         # brand
         filter(brand %in%  input$car_brand) %>%
         # model
         filter(Modelis %in% models) %>%
-        filter(Gads %in% seq(input$year_range[1], input$year_range[2]))
+        filter(Gads %in% seq(input$year_range[1], input$year_range[2])) %>%
+      select(odo = `Nobrauk.`, year = Gads, price = Cena, model = Modelis, brand) %>%
+        group_by(brand, model, year) %>%
+        summarise(price = mean(price), odo = mean(odo)) %>%
+        ungroup() %>%
+        mutate(color =  color$color[findInterval(odo, color$odo)])
+      
     }
 
     

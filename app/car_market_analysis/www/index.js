@@ -20,7 +20,8 @@ var dataChart = [];
 for (var i = 0; i < Object.keys(data).length; i++){
     dataChart[i] = {
         x: data[i].year,
-        y: data[i].price
+        y: data[i].price,
+        odo: data[i].odo
     }
 }
 console.log(dataChart)
