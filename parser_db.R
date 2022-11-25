@@ -21,7 +21,7 @@ check_data <- data.frame(
 
 total_data <- data.frame()
 # for each brand i go through pages
-for (brand in c(1:5)) { # c(1:nrow(check_data))
+for (brand in c(1:nrow(check_data))) { # c(1:nrow(check_data))
   Sys.sleep(2)
   print(check_data$brand[brand])
   link <- check_data$link[brand]
