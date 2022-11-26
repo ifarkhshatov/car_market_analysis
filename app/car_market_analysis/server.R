@@ -1,6 +1,7 @@
 
 
 
+
 options(dplyr.summarise.inform = FALSE)
 options(scipen = 999)
 
@@ -99,30 +100,54 @@ shinyServer(function(input, output, session) {
         mutate(
           bucket_price = cut(
             price,
-            breaks = c(-Inf, seq(0, 50000, by =
-                                   2000), +Inf),
-            labels = as.character(c(-Inf, seq(0, 50000, by =
+            breaks = c(-Inf, seq(0, 30000, by =
+                                   2000),+Inf),
+            labels = as.character(c(-Inf, seq(0, 30000, by =
                                                 2000)))
           ),
           ordered_result = TRUE
         ) %>%
         # as.factor and .drop false to fill with 0 chart
-        group_by( labels = as.factor(bucket_price), 
-                  label = as.factor(brand), .drop = FALSE) %>% 
+        group_by(
+          labels = as.factor(bucket_price),
+          label = as.factor(brand),
+          .drop = FALSE
+        ) %>%
         summarise(x = n(), .groups = "drop") %>%
         # group small cars to 'Other group
         group_by(label) %>%
-        mutate(check = ifelse(sum(x) < 250, 1,0 )) %>%
+        mutate(check = ifelse(sum(x) < 250, 1, 0)) %>%
         ungroup() %>%
-        mutate(label = as.factor( ifelse(check == 1, "Other", as.character(label)))) %>%
+        mutate(label = as.factor(ifelse(
+          check == 1, "Other", as.character(label)
+        ))) %>%
         group_by(labels, label, .drop = FALSE) %>%
-        summarise(x = sum(x)) %>%   
+        summarise(x = sum(x)) %>%
         ungroup() %>%
-          #TODO:filter unused bonds well make it better later 
+        #TODO:filter unused bonds well make it better later
         filter(labels != '-Inf')
-        
       
-      df <- jsonlite::toJSON(list(df_by_price,'bar_stacked'))
+      df_price_vs_range <- total_data_parsed %>%
+        filter(Gads %in% seq(input$year_range[1], input$year_range[2])) %>%
+        select(odo = `Nobrauk.`,
+               price = Cena) %>% 
+        mutate(
+          labels = cut(
+            odo,
+            breaks = c(-Inf, seq(0, 250000, by =
+                                   10000),+Inf),
+            labels = as.character( c(-Inf,seq(0, 250000, by =
+                                                10000)))
+          ),
+          ordered_result = TRUE
+        ) %>% 
+        group_by(labels) %>%
+        summarise(x = floor(mean(price))) %>%
+        ungroup()
+      
+      
+      
+      df <- jsonlite::toJSON(list(df_by_price, 'bar_stacked',df_price_vs_range))
     } else {
       if (input$car_model == "All") {
         models <- unique(total_data_parsed$Modelis)
@@ -147,11 +172,11 @@ shinyServer(function(input, output, session) {
         # group_by(brand, model, year) %>%
         # summarise(price = mean(price), odo = mean(odo)) %>%
         # ungroup() %>%
-        mutate(color =  color$color[findInterval(odo, color$odo)]) 
-      df <- jsonlite::toJSON(list(df,'scatter') )
+        mutate(color =  color$color[findInterval(odo, color$odo)])
+      df <- jsonlite::toJSON(list(df, 'scatter'))
     }
     
-
+    
   })
   
   # sending json object of filtered countries data

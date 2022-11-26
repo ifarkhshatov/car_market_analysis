@@ -1,25 +1,17 @@
 console.log("index.js loaded")
-var i;
 // Getting info from server
 Shiny.addCustomMessageHandler("dataChartJS_scatter", function (data) {
     //  dailyChart(data);
     iss = data
-    chartGenOrig(data[0], data[1][0], 'Price distribution')
+    drawChart('.chart-1',data[0], data[1][0], 'Price distribution',1);
+    drawChart('.chart-2',data[2], 'line','s',2)
 })
-
-
-function chartGenOrig(dataChartFromShiny, chartType, chartLabel) {
  
-    $(".countries-stats").empty();
-    $(".countries-stats").append(
-        '<canvas id="countries-stats"></canvas>'
-    );
-    // get canvas 
-    var canvas = document.getElementById("countries-stats");
+function chartGenOrig(dataChartFromShiny, chartType, chartLabel, canvasId) {
     var randomNum = () => Math.floor(Math.random() * (235 - 52 + 1) + 52);
     var randomRGB = () => `rgb(${randomNum()}, ${randomNum()}, ${randomNum()})`;
     var datasetsChart;
-    var  optionsChart;
+    var optionsChart;
     // preapre data depends on chart type
     switch (chartType) {
         case 'scatter':
@@ -83,7 +75,10 @@ function chartGenOrig(dataChartFromShiny, chartType, chartLabel) {
                 }];
 
     }
-
+    
+    // get canvas 
+    var canvas = document.getElementById(canvasId);
+    console.log(canvas)
     new Chart(canvas, {
         type: chartType == 'bar_stacked'? 'bar': chartType,
         data: {
@@ -91,9 +86,16 @@ function chartGenOrig(dataChartFromShiny, chartType, chartLabel) {
             datasets: datasetsChart,
         },
         options: optionsChart
-
-
     })
 
 }
 
+
+function drawChart(divName, dataChartFromShiny, chartType, chartLabel,ids) {
+    var canvasId = 'chart-stats-'+ids
+    $(divName).empty();
+    $(divName).append(
+        '<canvas id="'+canvasId+'"></canvas>'
+    );
+    chartGenOrig(dataChartFromShiny, chartType, chartLabel, canvasId);
+}
