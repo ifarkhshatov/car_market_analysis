@@ -10,7 +10,7 @@ library(shiny)
 
 # Define UI for application that draws a histogram
 shinyUI(fluidPage(
-
+    includeCSS("www/style.css"),
     # Application title
     titlePanel("Car data analysis"),
 
