@@ -3,8 +3,8 @@ console.log("index.js loaded")
 Shiny.addCustomMessageHandler("dataChartJS_scatter", function (data) {
     //  dailyChart(data);
     iss = data
-    drawChart('.chart-1',data[0], data[1][0], 'Price distribution',1);
-    drawChart('.chart-2',data[2], 'line','s',2)
+    drawChart('.chart',data[0], data[1][0], 'Price distribution',0);
+    drawChart('.chart',data[2], 'line','s',1)
 })
  
 function chartGenOrig(dataChartFromShiny, chartType, chartLabel, canvasId) {
@@ -90,11 +90,11 @@ function chartGenOrig(dataChartFromShiny, chartType, chartLabel, canvasId) {
 
 }
 
-
+// find div clean and draw figure there
 function drawChart(divName, dataChartFromShiny, chartType, chartLabel,ids) {
     var canvasId = 'chart-stats-'+ids
-    $(divName).empty();
-    $(divName).append(
+    $(divName).eq(ids).empty();
+    $(divName).eq(ids).append(
         '<canvas id="'+canvasId+'"></canvas>'
     );
     chartGenOrig(dataChartFromShiny, chartType, chartLabel, canvasId);
