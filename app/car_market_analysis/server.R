@@ -64,6 +64,29 @@ shinyServer(function(input, output, session) {
     )
   })
   
+  #Price range
+  output$price_range <- renderUI({
+    req(input$car_brand)
+    input$car_brand
+    if (input$car_brand != "All") {
+      min_price <-
+        round(min(as.integer(total_data_parsed$Cena[total_data_parsed$brand %in% input$car_brand])), digits = -3)
+      max_price <-
+        round(max(as.integer(total_data_parsed$Cena[total_data_parsed$brand %in% input$car_brand])), digits = -3)
+    } else {
+      min_price <- round(min(as.integer(total_data_parsed$Cena)), digits = -3)
+      max_price <- round(max(as.integer(total_data_parsed$Cena)), digits = -3)
+    }
+    sliderInput(
+      "price_range",
+      h4("Select price range:"),
+      min = 0,
+      max = max_price + 1,
+      value = c(min_price, max_price),
+      sep = "",
+      step = 1000
+    )
+  })
   
   # reactive event e.g. parse data to html to make it workable with chart.js
   dataChartJS_scatter <- eventReactive({
@@ -71,12 +94,13 @@ shinyServer(function(input, output, session) {
     input$year_range
     input$car_brand
     input$car_model
+    input$price_range
   }, {
     # it is required only brand car to do initial dash statistics
     req(input$car_brand)
     req(input$car_model)
     req(input$year_range)
-    
+    req(input$price_range)
     # creat heat map
     
     fun_color_range <- colorRampPalette(c("blue", "red"))
@@ -90,6 +114,7 @@ shinyServer(function(input, output, session) {
     if (input$car_brand == "All") {
       df_by_price <- total_data_parsed %>%
         filter(Gads %in% seq(input$year_range[1], input$year_range[2])) %>%
+        filter(Cena >input$price_range[1] & Cena < input$price_range[2]) %>%
         select(
           odo = `Nobrauk.`,
           year = Gads,
@@ -129,6 +154,7 @@ shinyServer(function(input, output, session) {
       
       df_price_vs_range <- total_data_parsed %>%
         filter(Gads %in% seq(input$year_range[1], input$year_range[2])) %>%
+        filter(Cena >input$price_range[1] & Cena < input$price_range[2]) %>%
         select(odo = `Nobrauk.`,
                price = Cena) %>% 
         mutate(
@@ -145,9 +171,20 @@ shinyServer(function(input, output, session) {
         summarise(x = floor(mean(price))) %>%
         ungroup()
       
+      df_by_brand_total <- total_data_parsed %>%
+        filter(Gads %in% seq(input$year_range[1], input$year_range[2])) %>%
+        filter(Cena >input$price_range[1] & Cena < input$price_range[2]) %>%
+        group_by(labels = brand) %>%
+        summarise(x = n()) %>%
+        ungroup() %>%
+        mutate(labels = ifelse(x < 100, 'Other', labels)) %>%
+        group_by(labels) %>%
+        summarise(x = sum(x)) %>%
+        arrange(-x) %>%
+        ungroup()
       
       
-      df <- jsonlite::toJSON(list(df_by_price, 'bar_stacked',df_price_vs_range))
+      df <- jsonlite::toJSON(list(df_by_price, 'bar_stacked',df_price_vs_range, df_by_brand_total))
     } else {
       if (input$car_model == "All") {
         models <- unique(total_data_parsed$Modelis)
@@ -161,6 +198,7 @@ shinyServer(function(input, output, session) {
         # model
         filter(Modelis %in% models) %>%
         filter(Gads %in% seq(input$year_range[1], input$year_range[2])) %>%
+        filter(Cena >input$price_range[1] & Cena < input$price_range[2]) %>%
         # y = price, x = year to unify chart.js for further uses.
         select(
           odo = `Nobrauk.`,

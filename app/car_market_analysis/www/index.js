@@ -3,8 +3,9 @@ console.log("index.js loaded")
 Shiny.addCustomMessageHandler("dataChartJS_scatter", function (data) {
     //  dailyChart(data);
     iss = data
-    drawChart('.chart',data[0], data[1][0], 'Price distribution',0);
-    drawChart('.chart',data[2], 'line','s',1)
+    // drawChart('.chart',data[0], data[1][0], 'Price distribution',0);
+    drawChart('.chart',data[3], 'bar', 'Price distribution',0);
+    drawChart('.chart',data[2], 'bar','Price to Odo',1);
 })
  
 function chartGenOrig(dataChartFromShiny, chartType, chartLabel, canvasId) {
@@ -54,11 +55,8 @@ function chartGenOrig(dataChartFromShiny, chartType, chartLabel, canvasId) {
                      }]
                 },
                 plugins: {
-    
                     colorschemes: {
-    
                         scheme: 'brewer.Paired12'
-    
                     }
     
                 },
