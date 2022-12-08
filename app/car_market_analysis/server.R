@@ -6,6 +6,7 @@ options(dplyr.summarise.inform = FALSE)
 options(scipen = 999)
 
 library(shiny)
+library(shinyWidgets)
 library(shinydashboard)
 # Define server logic required to draw a histogram
 shinyServer(function(input, output, session) {
@@ -68,24 +69,16 @@ shinyServer(function(input, output, session) {
   output$price_range <- renderUI({
     req(input$car_brand)
     input$car_brand
-    if (input$car_brand != "All") {
-      min_price <-
-        round(min(as.integer(total_data_parsed$Cena[total_data_parsed$brand %in% input$car_brand])), digits = -3)
-      max_price <-
-        round(max(as.integer(total_data_parsed$Cena[total_data_parsed$brand %in% input$car_brand])), digits = -3)
-    } else {
-      min_price <- round(min(as.integer(total_data_parsed$Cena)), digits = -3)
-      max_price <- round(max(as.integer(total_data_parsed$Cena)), digits = -3)
-    }
-    sliderInput(
+    numericRangeInput(
       "price_range",
       h4("Select price range:"),
       min = 0,
-      max = max_price + 1,
-      value = c(min_price, max_price),
+      max = 500000,
+      value = c(0,100000),
       sep = "",
-      step = 1000
+      step = 500
     )
+     
   })
   
   # reactive event e.g. parse data to html to make it workable with chart.js
@@ -177,7 +170,7 @@ shinyServer(function(input, output, session) {
         group_by(labels = brand) %>%
         summarise(x = n()) %>%
         ungroup() %>%
-        mutate(labels = ifelse(x < 100, 'Other', labels)) %>%
+        # mutate(labels = ifelse(x < 100, 'Other', labels)) %>%
         group_by(labels) %>%
         summarise(x = sum(x)) %>%
         arrange(-x) %>%
@@ -221,6 +214,15 @@ shinyServer(function(input, output, session) {
   
   observe(
     session$sendCustomMessage(type = "dataChartJS_scatter", message = dataChartJS_scatter())
+  )
+  # send all filters from dashboard
+  observe(
+    session$sendCustomMessage(type = "filterData",
+                              message = jsonlite::toJSON(list(
+                                input$year_range,
+                                input$car_brand,
+                                input$car_model,
+                                input$price_range)))
   )
   
   # to log out reactive table use observer()

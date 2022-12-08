@@ -1,6 +1,7 @@
 # left side men
 # 
 library(shinydashboard)
+library( shinyWidgets )
 dashboardPage(
   dashboardHeader(title="Car data analysis"),
   dashboardSidebar(            # all ui stuff are developed in server side
@@ -13,5 +14,6 @@ dashboardPage(
     tags$head(
       tags$link(rel = "stylesheet", type = "text/css", href = "custom.css")
     )
+    
   )
 )

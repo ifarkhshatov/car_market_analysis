@@ -1,13 +1,25 @@
-console.log("index.js loaded")
+
+// Data from side bar 
+var filterData;
+Shiny.addCustomMessageHandler("filterData", function (data) {
+    filterData = data;
+})
+
 // Getting info from server
 Shiny.addCustomMessageHandler("dataChartJS_scatter", function (data) {
     //  dailyChart(data);
     iss = data
-    // drawChart('.chart',data[0], data[1][0], 'Price distribution',0);
-    drawChart('.chart',data[3], 'bar', 'Price distribution',0);
-    drawChart('.chart',data[2], 'bar','Price to Odo',1);
+    if (filterData[1][0] == 'All') {
+        drawChart('.chart', data[3], 'bar', 'Price distribution', 0);
+        drawChart('.chart', data[2], 'bar', 'Price to Odo', 1);
+    } else {
+        $('.chart').empty();
+        drawChart('.chart', data[0], data[1][0], 'Price distribution', 0);
+    }
+
 })
- 
+
+
 function chartGenOrig(dataChartFromShiny, chartType, chartLabel, canvasId) {
     var randomNum = () => Math.floor(Math.random() * (235 - 52 + 1) + 52);
     var randomRGB = () => `rgb(${randomNum()}, ${randomNum()}, ${randomNum()})`;
@@ -45,40 +57,53 @@ function chartGenOrig(dataChartFromShiny, chartType, chartLabel, canvasId) {
                 }
             }
 
-           optionsChart = {
+            optionsChart = {
                 scales: {
                     xAxes: [{
                         stacked: true // this should be set to make the bars stacked
-                     }],
-                     yAxes: [{
+                    }],
+                    yAxes: [{
                         stacked: true // this also..
-                     }]
+                    }]
                 },
                 plugins: {
                     colorschemes: {
                         scheme: 'brewer.Paired12'
                     }
-    
+
                 },
                 responsive: true,
             }
             break;
         //bar or line (not stacked)
         default:
+            //default options
+            optionsChart = {
+                plugins: {
+                  // Change options for ALL labels of THIS CHART
+                  datalabels: {
+                    color: '#36A2EB'
+                  }
+                }
+              }
+
+            //default chart
             datasetsChart =
                 [{
                     data: dataChartFromShiny.map(x => x.x),
                     fill: true,
                     label: chartLabel,
+                    backgroundColor: '#3c8dbc',
                 }];
 
+
     }
-    
+
     // get canvas 
     var canvas = document.getElementById(canvasId);
     console.log(canvas)
     new Chart(canvas, {
-        type: chartType == 'bar_stacked'? 'bar': chartType,
+        type: chartType == 'bar_stacked' ? 'bar' : chartType,
         data: {
             labels: [...new Set(dataChartFromShiny.map(x => x.labels))],
             datasets: datasetsChart,
@@ -89,11 +114,11 @@ function chartGenOrig(dataChartFromShiny, chartType, chartLabel, canvasId) {
 }
 
 // find div clean and draw figure there
-function drawChart(divName, dataChartFromShiny, chartType, chartLabel,ids) {
-    var canvasId = 'chart-stats-'+ids
+function drawChart(divName, dataChartFromShiny, chartType, chartLabel, ids) {
+    var canvasId = 'chart-stats-' + ids
     $(divName).eq(ids).empty();
     $(divName).eq(ids).append(
-        '<canvas id="'+canvasId+'"></canvas>'
+        '<canvas id="' + canvasId + '"></canvas>'
     );
     chartGenOrig(dataChartFromShiny, chartType, chartLabel, canvasId);
 }
