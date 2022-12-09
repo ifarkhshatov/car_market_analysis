@@ -230,6 +230,7 @@ shinyServer(function(input, output, session) {
   #dashboard
   
   output$car_stats_dashboard <-
-    renderUI(includeHTML('www/index.html'))
+    renderUI(includeHTML('www/charts/index.html'))
+  output$car_chart2 <- renderUI(includeHTML('www/charts/chart2.html'))
   
 })

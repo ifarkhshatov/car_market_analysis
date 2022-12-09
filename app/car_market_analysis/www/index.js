@@ -84,7 +84,9 @@ function chartGenOrig(dataChartFromShiny, chartType, chartLabel, canvasId) {
                   datalabels: {
                     color: '#36A2EB'
                   }
-                }
+                },
+                responsive: true,
+                maintainAspectRatio: false
               }
 
             //default chart
@@ -101,14 +103,16 @@ function chartGenOrig(dataChartFromShiny, chartType, chartLabel, canvasId) {
 
     // get canvas 
     var canvas = document.getElementById(canvasId);
-    console.log(canvas)
     new Chart(canvas, {
         type: chartType == 'bar_stacked' ? 'bar' : chartType,
         data: {
             labels: [...new Set(dataChartFromShiny.map(x => x.labels))],
             datasets: datasetsChart,
         },
-        options: optionsChart
+        options: {
+            // responsive:true,
+            // maintainAspectRatio: false
+        }//optionsChart
     })
 
 }

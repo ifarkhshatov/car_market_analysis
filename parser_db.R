@@ -4,6 +4,8 @@ library(tidyverse)
 library(rvest)
 library(janitor)
 library(ggplot2)
+library(fontawesome)
+
 # install.packages("shinydashboard")
 setwd(stringr::str_sub(
   as.character(rstudioapi::getActiveDocumentContext()$path),
