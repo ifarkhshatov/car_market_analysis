@@ -198,12 +198,13 @@ shinyServer(function(input, output, session) {
           x = Gads,
           y = Cena,
           model = Modelis,
-          brand
+          brand,
         ) %>%
         # group_by(brand, model, year) %>%
         # summarise(price = mean(price), odo = mean(odo)) %>%
         # ungroup() %>%
         mutate(color =  color$color[findInterval(odo, color$odo)])
+      
       df <- jsonlite::toJSON(list(df, 'scatter'))
     }
     

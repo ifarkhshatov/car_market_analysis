@@ -57,15 +57,18 @@ for (brand in c(1:nrow(check_data))) { # c(1:nrow(check_data))
         slice(1:(n()-1)) %>%
         mutate(brand = check_data$brand[brand])
       # find unique id for advertisement instead of VIN for now
-      link_and_id_data <- navia_num %>%
+     id_data <- navia_num %>%
         html_elements('.d1 a') %>% 
         html_attr('href') %>% 
         str_extract("([^\\/]+$)") %>%
         str_replace_all(".html","")
-        # filter duplicated cars
-        # t_data <- t_data %>% mutate(link = link_and_id_data) %>% 
-        #   filter(link %in% total_data$link)
-      
+     
+     link_data <- navia_num %>%
+       html_elements('.d1 a') %>% 
+       html_attr('href') 
+     
+     t_data <- t_data %>% mutate(link = paste0("https://www.ss.com", link_data))
+
       total_data <- bind_rows(total_data, t_data)
       rm(t_data)
     }
