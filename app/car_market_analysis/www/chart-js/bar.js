@@ -71,7 +71,9 @@
                 beginAtZero: true,
                 callback: function(value, index, values) {
                   if (!isNaN(value) || !value ===undefined) {
-                    return value.toLocaleString();
+                    // need to add this to function value input
+                    // return value.toLocaleString();
+                    return value
                   } else {
                     return value
                   }

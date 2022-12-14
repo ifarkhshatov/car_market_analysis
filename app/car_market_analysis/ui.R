@@ -7,7 +7,9 @@ dashboardPage(
     uiOutput("car_brand"),
     uiOutput("car_model"),
     uiOutput("year_range"),
-    uiOutput("price_range")),
+    uiOutput("price_range"),
+    uiOutput("odo_range"),
+    uiOutput("reset")),
   dashboardBody(
     tags$head(
       tags$link(rel = "stylesheet", type = "text/css", href = "./custom.css"),
