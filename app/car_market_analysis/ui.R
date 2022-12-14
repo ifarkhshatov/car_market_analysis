@@ -12,8 +12,9 @@ dashboardPage(
     tags$head(
       tags$link(rel = "stylesheet", type = "text/css", href = "./custom.css"),
     ), 
-    box(uiOutput("car_stats_dashboard")),
-    box(uiOutput("car_chart2")),
-   
+    uiOutput("car_stats_dashboard"),
+    uiOutput("car_chart2"),
+    uiOutput("car_chart3"),
+    uiOutput("car_chart4")
   )
 )

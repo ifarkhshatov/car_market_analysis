@@ -1,7 +1,3 @@
-
-
-
-
 options(dplyr.summarise.inform = FALSE)
 options(scipen = 999)
 options(browser = 'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe')
@@ -14,13 +10,16 @@ library(shinydashboard)
 shinyServer(function(input, output, session) {
   #BRAND SELECTOR
   output$car_brand <- renderUI({
+    selected = 'All'
     # use names() to show only name not content of select input
     selectInput(
       "car_brand",
       label = h4("Select Brand:"),
+      selected = selected,
       choices = c("All", unique(total_data_parsed$brand))
     )
   })
+  
   
   
   
@@ -76,11 +75,11 @@ shinyServer(function(input, output, session) {
       h4("Select price range:"),
       min = 0,
       max = 500000,
-      value = c(0,100000),
+      value = c(0, 100000),
       sep = "",
       step = 500
     )
-     
+    
   })
   
   # reactive event e.g. parse data to html to make it workable with chart.js
@@ -107,79 +106,66 @@ shinyServer(function(input, output, session) {
     color$color <- fun_color_range(nrow(color))
     
     if (input$car_brand == "All") {
-      df_by_price <- total_data_parsed %>%
+      filtered_df <-  total_data_parsed %>%
         filter(Gads %in% seq(input$year_range[1], input$year_range[2])) %>%
-        filter(Cena >input$price_range[1] & Cena < input$price_range[2]) %>%
-        select(
-          odo = `Nobrauk.`,
-          year = Gads,
-          price = Cena,
-          model = Modelis,
-          brand
-        )  %>%
-        mutate(
-          bucket_price = cut(
-            price,
-            breaks = c(-Inf, seq(0, 30000, by =
-                                   2000),+Inf),
-            labels = as.character(c(-Inf, seq(0, 30000, by =
-                                                2000)))
-          ),
-          ordered_result = TRUE
-        ) %>%
-        # as.factor and .drop false to fill with 0 chart
-        group_by(
-          labels = as.factor(bucket_price),
-          label = as.factor(brand),
-          .drop = FALSE
-        ) %>%
-        summarise(x = n(), .groups = "drop") %>%
-        # group small cars to 'Other group
-        group_by(label) %>%
-        mutate(check = ifelse(sum(x) < 250, 1, 0)) %>%
-        ungroup() %>%
-        mutate(label = as.factor(ifelse(
-          check == 1, "Other", as.character(label)
-        ))) %>%
-        group_by(labels, label, .drop = FALSE) %>%
-        summarise(x = sum(x)) %>%
-        ungroup() %>%
-        #TODO:filter unused bonds well make it better later
-        filter(labels != '-Inf')
+        filter(Cena > input$price_range[1] &
+                 Cena < input$price_range[2])
       
-      df_price_vs_range <- total_data_parsed %>%
-        filter(Gads %in% seq(input$year_range[1], input$year_range[2])) %>%
-        filter(Cena >input$price_range[1] & Cena < input$price_range[2]) %>%
+      # Chart where distribution of avg price and odometer value
+      df_price_vs_range <- filtered_df %>%
         select(odo = `Nobrauk.`,
-               price = Cena) %>% 
+               price = Cena) %>%
         mutate(
           labels = cut(
             odo,
             breaks = c(-Inf, seq(0, 250000, by =
-                                   10000),+Inf),
-            labels = as.character( c(-Inf,seq(0, 250000, by =
+                                   10000), +Inf),
+            labels = as.character(c(-Inf, seq(0, 250000, by =
                                                 10000)))
           ),
           ordered_result = TRUE
-        ) %>% 
+        ) %>%
         group_by(labels) %>%
         summarise(x = floor(mean(price))) %>%
         ungroup()
-      
-      df_by_brand_total <- total_data_parsed %>%
-        filter(Gads %in% seq(input$year_range[1], input$year_range[2])) %>%
-        filter(Cena >input$price_range[1] & Cena < input$price_range[2]) %>%
+      # group by brand and it's quantity
+      df_by_brand_total <- filtered_df %>%
         group_by(labels = brand) %>%
         summarise(x = n()) %>%
         ungroup() %>%
         # mutate(labels = ifelse(x < 100, 'Other', labels)) %>%
+        # group_by(labels) %>%
+        # summarise(x = sum(x)) %>%
+        arrange(-x) #%>%
+      # ungroup()
+      # distribution by year and its mean price
+      df_by_year_and_price <- filtered_df %>%
+        mutate(
+          labels = cut(
+            Gads,
+            breaks = c(-Inf, seq(1990, 2023, by =
+                                   1)),
+            labels = as.character(c(seq(
+              1990, 2023, by =
+                1
+            )))
+          ),
+          ordered_result = TRUE
+        ) %>%
         group_by(labels) %>%
-        summarise(x = sum(x)) %>%
-        arrange(-x) %>%
-        ungroup()
+        summarise(x = floor(mean(Cena)))
       
       
-      df <- jsonlite::toJSON(list(df_by_price, 'bar_stacked',df_price_vs_range, df_by_brand_total))
+      df <-
+        jsonlite::toJSON(
+          list(
+            '',
+            'bar_stacked',
+            df_price_vs_range,
+            df_by_brand_total,
+            df_by_year_and_price
+          )
+        )
     } else {
       if (input$car_model == "All") {
         models <- unique(total_data_parsed$Modelis)
@@ -187,27 +173,68 @@ shinyServer(function(input, output, session) {
         models <- input$car_model
       }
       
-      df <- total_data_parsed  %>%
-        # brand
-        filter(brand %in%  input$car_brand) %>%
-        # model
-        filter(Modelis %in% models) %>%
-        filter(Gads %in% seq(input$year_range[1], input$year_range[2])) %>%
-        filter(Cena >input$price_range[1] & Cena < input$price_range[2]) %>%
-        # y = price, x = year to unify chart.js for further uses.
-        select(
-          odo = `Nobrauk.`,
-          x = Gads,
-          y = Cena,
-          model = Modelis,
-          brand,
-        ) %>%
-        # group_by(brand, model, year) %>%
-        # summarise(price = mean(price), odo = mean(odo)) %>%
-        # ungroup() %>%
-        mutate(color =  color$color[findInterval(odo, color$odo)])
       
-      df <- jsonlite::toJSON(list(df, 'scatter'))
+      filtered_df <-  total_data_parsed %>%
+        filter(Gads %in% seq(input$year_range[1], input$year_range[2])) %>%
+        filter(Cena > input$price_range[1] &
+                 Cena < input$price_range[2]) %>%
+        filter(brand == input$car_brand)
+      
+      # Chart where distribution of avg price and odometer value
+      df_price_vs_range <- filtered_df %>%
+        select(odo = `Nobrauk.`,
+               price = Cena) %>%
+        mutate(
+          labels = cut(
+            odo,
+            breaks = c(-Inf, seq(0, 250000, by =
+                                   10000), +Inf),
+            labels = as.character(c(-Inf, seq(0, 250000, by =
+                                                10000)))
+          ),
+          ordered_result = TRUE
+        ) %>%
+        group_by(labels) %>%
+        summarise(x = floor(mean(price))) %>%
+        ungroup()
+      # group by brand and it's quantity
+      df_by_brand_total <- filtered_df %>%
+        group_by(labels = Modelis) %>%
+        summarise(x = n()) %>%
+        ungroup() %>%
+        # mutate(labels = ifelse(x < 100, 'Other', labels)) %>%
+        # group_by(labels) %>%
+        # summarise(x = sum(x)) %>%
+        arrange(-x) #%>%
+      # ungroup()
+      # distribution by year and its mean price
+      df_by_year_and_price <- filtered_df %>%
+        mutate(
+          labels = cut(
+            Gads,
+            breaks = c(-Inf, seq(1990, 2023, by =
+                                   1)),
+            labels = as.character(c(seq(
+              1990, 2023, by =
+                1
+            )))
+          ),
+          ordered_result = TRUE
+        ) %>%
+        group_by(labels) %>%
+        summarise(x = floor(mean(Cena)))
+      
+      
+      df <-
+        jsonlite::toJSON(
+          list(
+            '',
+            'bar_stacked',
+            df_price_vs_range,
+            df_by_brand_total,
+            df_by_year_and_price
+          )
+        )
     }
     
     
@@ -218,22 +245,35 @@ shinyServer(function(input, output, session) {
   observe(
     session$sendCustomMessage(type = "dataChartJS_scatter", message = dataChartJS_scatter())
   )
+  # return value from JS to update input$car_brand
+  observeEvent(input$returnFromUI,{
+    if (input$returnFromUI$id == "chart-stats-0" & input$car_brand == 'All') {
+      selected = input$returnFromUI$x_value
+      updateSelectInput(inputId = 'car_brand',selected = selected)
+    }
+  })
+  
   # send all filters from dashboard
-  observe(
-    session$sendCustomMessage(type = "filterData",
-                              message = jsonlite::toJSON(list(
-                                input$year_range,
-                                input$car_brand,
-                                input$car_model,
-                                input$price_range)))
-  )
+  observe(session$sendCustomMessage(type = "filterData",
+                                    message = jsonlite::toJSON(
+                                      list(
+                                        input$year_range,
+                                        input$car_brand,
+                                        input$car_model,
+                                        input$price_range
+                                      )
+                                    )))
   
   # to log out reactive table use observer()
   # observe(print(dataChartJS_scatter()))
   #dashboard
   
+  
   output$car_stats_dashboard <-
-    renderUI(includeHTML('www/charts/index.html'))
-  output$car_chart2 <- renderUI(includeHTML('www/charts/chart2.html'))
+    renderUI(box(includeHTML('www/charts/index.html')))
+  output$car_chart2 <-
+    renderUI(box(includeHTML('www/charts/chart2.html')))
+  output$car_chart3 <-
+    renderUI(box(includeHTML('www/charts/chart3.html')))
   
 })

@@ -17,20 +17,7 @@
     
     // Which column defines 'bucket' names?
     var LABELS = labels;  
-  
-    // For each column representing a data series, define its name and color
-    // var SERIES = [  
-    //   {
-    //     column: 'nonlearner',
-    //     name: 'Non-Learners',
-    //     color: 'grey'
-    //   },
-    //   {
-    //     column: 'learner',
-    //     name: 'Learners',
-    //     color: 'blue'
-    //   }
-    // ];
+
     var SERIES = dataChartFromShiny
   
     // x-axis label and label in tooltip
@@ -113,11 +100,30 @@
             displayColors: false,
             callbacks: {
               label: function(tooltipItem, all) {
-                return all.datasets[tooltipItem.datasetIndex].label
-                  + ': ' + tooltipItem.yLabel.toLocaleString();
+                // return parsed data on hover bar, point
+                return tooltipItem.yLabel.toLocaleString();
+                //all.datasets[tooltipItem.datasetIndex].label
+                // + ': ' + 
               }
             }
-          }
+          },
+          // on click function
+          // on click on area of char do nothing since i[0] <- is Undefined
+          // otherwise return back chart id, and x + y value to Shiny in order to redraw/refilter data
+          onClick: function(c,i) {
+            e = i[0];
+            if (e !== undefined) {
+              var id = this['canvas'].id;
+              var x_value = this.data.labels[e._index];
+              var y_value = this.data.datasets[0].data[e._index];
+              // on click send back to shiny server data into input$returnFromUI in server.R
+              Shiny.setInputValue('returnFromUI', {
+                id,
+                x_value,
+                y_value,
+              })
+            }
+        }
         }
       });
   }

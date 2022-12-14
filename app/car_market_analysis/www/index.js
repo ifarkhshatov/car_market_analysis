@@ -7,15 +7,11 @@ Shiny.addCustomMessageHandler("filterData", function (data) {
 
 // Getting info from server
 Shiny.addCustomMessageHandler("dataChartJS_scatter", function (data) {
-    //  dailyChart(data);
     iss = data
-    if (filterData[1][0] == 'All') {
         drawChart('.chart', data[3], 'bar', 'Price distribution', 0, false, false, 'price', 'Car Brand', 'Quantity on market', true, false);
         drawChart('.chart', data[2], 'bar', 'AVG Price to Odometer', 1, false, false, 'price', 'Odometer', 'Price', true, false);
-    } else {
-        $('.chart').empty();
-        drawChart('.chart', data[0], data[1][0], 'Price distribution', 0);
-    }
+        drawChart('.chart', data[4], 'bar', 'AVG Price to Year', 2, false, false, 'price', 'Year', 'Price', true, false);
+
 
 })
 
