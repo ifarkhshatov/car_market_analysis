@@ -1,3 +1,55 @@
-.main-header {
-    background-color: rgb(243, 0, 0) !important;
-  }
+/* logo */
+.skin-blue .main-header .logo {
+font-size: 160%;
+font-weight: 600;
+background-image: linear-gradient(to bottom left, rgb(85, 60, 154), rgb(238, 75, 43));
+color: transparent;
+background-clip: text;
+-webkit-background-clip: text;
+}
+
+h4 {
+    color:#553c9a;
+}
+.irs--shiny .irs-from, .irs--shiny .irs-to, .irs--shiny .irs-single,.irs--shiny .irs-bar {
+    background-color: #553c9a !important;
+    border-top: 1px solid #553c9a !important;
+    border-bottom: 1px solid #553c9a !important;
+    background: #553c9a !important;
+}
+
+.skin-blue .left-side, .skin-blue .main-sidebar, .skin-blue .wrapper {
+    background-color: white;
+}
+.box { 
+    border-top: 6px solid #553c9a;
+}
+/* navbar (rest of the header) */
+.skin-blue .main-header .navbar {
+background-color: white;
+}
+.skin-blue .main-header .navbar .sidebar-toggle {
+    color: #553c9a
+}
+
+/* main sidebar */
+.skin-blue .main-sidebar {
+background-color: white;
+}
+
+/* active selected tab in the sidebarmenu */
+.skin-blue .main-sidebar .sidebar .sidebar-menu .active a{
+background-color: white;
+color: #553c9a;
+}
+
+/* other links in the sidebarmenu when hovered */
+.skin-blue .main-sidebar .sidebar .sidebar-menu a:hover{
+background-color: #553c9a;
+color: white
+}
+/* toggle button when hovered  */
+.skin-blue .main-header .navbar .sidebar-toggle:hover{
+background-color:#553c9a;
+color: white
+}

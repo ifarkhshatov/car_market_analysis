@@ -2,6 +2,11 @@
   
   function barChart(canvasId, dataChartFromShiny, title, horizontal, stacked, labels, x_axis_label, y_axis_label, show_grid, show_legend) {
 
+    var ctx = document.getElementById(canvasId);
+    var gradient = ctx.getContext("2d").createLinearGradient(0, 0, 0, 400);
+    gradient.addColorStop(1, 'rgb(85, 60, 154)');   
+    gradient.addColorStop(0, 'rgb(238, 75, 43)');
+
     var TITLE = title
   
     // `false` for vertical column chart, `true` for horizontal bar chart
@@ -44,16 +49,14 @@
         data: dataChartFromShiny.map(x => x.x),
         fill: true,
         label: TITLE,
-        backgroundColor: '#3c8dbc',
+        backgroundColor: gradient,
         }];
 
       var barChartData = {
         labels:  [...new Set(dataChartFromShiny.map(x => x.labels))],
         datasets: datasets
       }
-  
-      var ctx = document.getElementById(canvasId);
-  
+ 
       new Chart(ctx, {
         type: HORIZONTAL ? 'horizontalBar' : 'bar',
         data: barChartData,
@@ -75,14 +78,18 @@
                 labelString: X_AXIS
               },
               gridLines: {
-                display: SHOW_GRID,
+                display: false//SHOW_GRID,
               },
-              // ticks: {
-              //   beginAtZero: true,
-              //   callback: function(value, index, values) {
-              //     return value.toLocaleString();
-              //   }
-              // }
+              ticks: {
+                beginAtZero: true,
+                callback: function(value, index, values) {
+                  if (!isNaN(value) || !value ===undefined) {
+                    return value.toLocaleString();
+                  } else {
+                    return value
+                  }
+                }
+              }
             }],
             yAxes: [{
               stacked: STACKED,
@@ -114,3 +121,14 @@
         }
       });
   }
+
+
+//   var options = {
+//     responsive: true,
+//     datasetStrokeWidth : 3,
+//     pointDotStrokeWidth : 4,
+//     tooltipFillColor: "rgba(0,0,0,0.8)",
+//     tooltipFontStyle: "bold",
+//     tooltipTemplate: "<%if (label){%><%=label + ' hod' %>: <%}%><%= value + '°C' %>",
+//     scaleLabel : "<%= Number(value).toFixed(0).replace('.', ',') + '°C'%>"
+// };

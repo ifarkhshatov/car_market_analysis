@@ -4,6 +4,8 @@
 
 options(dplyr.summarise.inform = FALSE)
 options(scipen = 999)
+options(browser = 'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe')
+options(shiny.launch.browser = .rs.invokeShinyWindowExternal)
 
 library(shiny)
 library(shinyWidgets)

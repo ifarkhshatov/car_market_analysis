@@ -1,5 +1,4 @@
-# left side men
-# 
+
 library(shinydashboard)
 library( shinyWidgets )
 dashboardPage(
@@ -11,7 +10,6 @@ dashboardPage(
     uiOutput("price_range")),
   dashboardBody(
     tags$head(
-      tags$link(rel = "stylesheet", type = "text/css", href = "./www/custom.css"),
       tags$link(rel = "stylesheet", type = "text/css", href = "./custom.css"),
     ), 
     box(uiOutput("car_stats_dashboard")),

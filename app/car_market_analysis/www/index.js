@@ -11,7 +11,7 @@ Shiny.addCustomMessageHandler("dataChartJS_scatter", function (data) {
     iss = data
     if (filterData[1][0] == 'All') {
         drawChart('.chart', data[3], 'bar', 'Price distribution', 0, false, false, 'price', 'Car Brand', 'Quantity on market', true, false);
-        drawChart('.chart', data[2], 'bar', 'Price to Odo', 1, false, false, 'price', 'Odometr', 'Price', true, false);
+        drawChart('.chart', data[2], 'bar', 'AVG Price to Odometer', 1, false, false, 'price', 'Odometer', 'Price', true, false);
     } else {
         $('.chart').empty();
         drawChart('.chart', data[0], data[1][0], 'Price distribution', 0);
