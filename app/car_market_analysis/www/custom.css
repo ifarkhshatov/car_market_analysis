@@ -53,3 +53,14 @@ color: white
 background-color:#553c9a;
 color: white
 }
+
+.nav-tabs-custom>.nav-tabs>li.active {
+    border-top-color: #553c9a;
+}
+
+.nav-tabs-custom>.nav-tabs>li.active:hover>a, .nav-tabs-custom>.nav-tabs>li.active>a {
+    background-color: #fff;
+    color: #553c9a;
+    font-weight: 600;
+    padding: 3px 5px;
+}

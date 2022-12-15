@@ -279,26 +279,26 @@ shinyServer(function(input, output, session) {
     session$sendCustomMessage(type = "dataChartJS_scatter", message = dataChartJS_scatter())
   )
   # return value from JS to update input$car_brand
-  observeEvent(input$returnFromUI, {
-    id = input$returnFromUI$id
-    if (id == "chart-stats-0" & input$car_brand == 'All') {
-      selected = input$returnFromUI$x_value
-      updateSelectInput(inputId = 'car_brand', selected = selected)
-    } else if (id == "chart-stats-0") {
-      selected = input$returnFromUI$x_value
-      updateSelectInput(inputId = 'car_model', selected = selected)
-    }
-    if (id == "chart-stats-1") {
-      values = c(
-        as.numeric(input$returnFromUI$x_value) - 10000,
-        as.numeric(input$returnFromUI$x_value)
-      )
-      if (!identical(values, numeric(0))) {
-        updateNumericRangeInput(inputId = 'odo_range', value = values)
-      }
-    }
+  # observeEvent(input$returnFromUI, {
+  #   id = input$returnFromUI$id
+  #   if (id == "chart-stats-0" & input$car_brand == 'All') {
+  #     selected = input$returnFromUI$x_value
+  #     updateSelectInput(inputId = 'car_brand', selected = selected)
+  #   } else if (id == "chart-stats-0") {
+  #     selected = input$returnFromUI$x_value
+  #     updateSelectInput(inputId = 'car_model', selected = selected)
+  #   }
+  #   if (id == "chart-stats-1") {
+  #     values = c(
+  #       as.numeric(input$returnFromUI$x_value) - 10000,
+  #       as.numeric(input$returnFromUI$x_value)
+  #     )
+  #     if (!identical(values, numeric(0))) {
+  #       updateNumericRangeInput(inputId = 'odo_range', value = values)
+  #     }
+  #   }
     
-  })
+  # })
   
   # send all filters from dashboard
   observe(session$sendCustomMessage(type = "filterData",
@@ -331,22 +331,24 @@ shinyServer(function(input, output, session) {
         div(class = "charts",
             div(class = "chart"))
       ),
-      tabPanel("Models Distribution")
+      #tabPanel("Models Distribution")
     ))
   output$car_chart2 <-
     renderUI(tabBox(id = "tabset2",
                     tabPanel(
-                      "Price",
+                      "Ø Price to Odometer",
                       div(class = "charts",
                           div(class = "chart"))
                     ),
-                    tabPanel("Tab2")))
+                    #tabPanel("Tab2")
+                    ))
   output$car_chart3 <-
     renderUI(tabBox(id = "tabset2",
                     tabPanel(
-                      "Price",       div(class = "charts",
+                      "Ø Price to Year",       div(class = "charts",
                                          div(class = "chart"))
                     ),
-                    tabPanel("Tab2")))
+                   # tabPanel("Tab2")
+                    ))
   
 })

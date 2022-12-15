@@ -6,7 +6,8 @@
     var gradient = ctx.getContext("2d").createLinearGradient(0, 0, 0, 400);
     gradient.addColorStop(1, 'rgba(85, 60, 154,1)');   
     gradient.addColorStop(0, 'rgba(238, 75, 43,1)');
-
+    // get active bar id in onClick
+    var activeBar = [];
     var TITLE = title
   
     // `false` for vertical column chart, `true` for horizontal bar chart
@@ -50,7 +51,7 @@
         
         options: {
           title: {
-            display: true,
+            display: false,//true,
             text: TITLE,
             fontSize: 14,
           },
@@ -126,12 +127,26 @@
                 y_value,
               })
               // only for last chart
-           if (id == 'chart-stats-0' && !isNaN(x_value)) {
-            // change color of clicked 
-            this.data.datasets[0].backgroundColor = Array(this.data.labels.length).fill('#cccccc');
-            this.data.datasets[0].backgroundColor[e._index] = gradient;
+            //  if (id == 'chart-stats-0' && !isNaN(x_value)) {
+            // change color of clicked
+                // if already click then gradient all 
+                // if current id in activeBar, then unclick 
+            if (activeBar.find(x => x == x_value) ) {
+              this.data.datasets[0].backgroundColor = gradient;
+              activeBar = [];
+              // if current bar is not highlighted then highlighted also
+            } else if (this.data.datasets[0].backgroundColor[e._index] == '#cccccc') {
+              this.data.datasets[0].backgroundColor[e._index] = gradient;
+              activeBar.push( x_value);
+            } else {
+              this.data.datasets[0].backgroundColor = Array(this.data.labels.length).fill('#cccccc');
+              this.data.datasets[0].backgroundColor[e._index] = gradient;
+              activeBar.push(x_value);
+            }
             this.update()
-           }
+            
+            console.log(activeBar)
+          //  }
           }
           }
         }
