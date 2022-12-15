@@ -13,6 +13,9 @@ dashboardPage(
   dashboardBody(
     tags$head(
       tags$link(rel = "stylesheet", type = "text/css", href = "./custom.css"),
+      tags$script(src = "./index.js"),
+      tags$script(src = "./chart.js"),
+      tags$script(src = "./chart-js/bar.js")
     ), 
     uiOutput("car_stats_dashboard"),
     uiOutput("car_chart2"),
