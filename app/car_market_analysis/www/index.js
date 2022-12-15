@@ -8,10 +8,10 @@ Shiny.addCustomMessageHandler("filterData", function (data) {
 // Getting info from server
 Shiny.addCustomMessageHandler("dataChartJS_scatter", function (data) {
     iss = data
-        drawChart('.chart', data[3], 'bar', 'Market', 0, false, false, 'price', 'Car Brand', 'Quantity on market', true, false);
-        drawChart('.chart', data[2], 'bar', 'AVG Price to Odometer', 1, false, false, 'price', 'Odometer', 'Price', true, false);
-        drawChart('.chart', data[4], 'bar', 'AVG Price to Year', 2, false, false, 'price', 'Year', 'Price', true, false);
-
+        drawChart('.chart', data[3], 'bar', 'Market', 0, false, false, 'price', 'Car Brand', 'Count', true, false);
+        drawChart('.chart', data[4], 'bar', 'AVG Price to Year', 1, false, false, 'price', 'Year', 'Price', true, false);
+        drawChart('.chart', data[5], 'bar', 'Count to year', 3, false, false, 'price', 'Year', 'Count', true, false);
+        drawChart('.chart', data[2], 'bar', 'AVG Price to Odometer', 2, false, false, 'price', 'Odometer', 'Price', true, false);
 
 })
 

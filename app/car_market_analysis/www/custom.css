@@ -58,7 +58,7 @@ color: white
     border-top-color: #553c9a;
 }
 
-.nav-tabs-custom>.nav-tabs>li.active:hover>a, .nav-tabs-custom>.nav-tabs>li.active>a {
+.nav-tabs-custom>.nav-tabs>li.active:hover>a, .nav-tabs-custom>.nav-tabs>li.active>a, .nav>li>a{
     background-color: #fff;
     color: #553c9a;
     font-weight: 600;

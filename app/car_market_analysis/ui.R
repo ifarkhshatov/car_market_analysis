@@ -20,6 +20,7 @@ dashboardPage(
     uiOutput("car_stats_dashboard"),
     uiOutput("car_chart2"),
     uiOutput("car_chart3"),
-    uiOutput("car_chart4")
+    uiOutput("car_chart4"),
+    uiOutput("car_chart5"),
   )
 )

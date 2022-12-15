@@ -2,7 +2,7 @@ options(dplyr.summarise.inform = FALSE)
 options(scipen = 999)
 # options(browser = 'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe')
 # options(shiny.launch.browser = .rs.invokeShinyWindowExternal)
-
+    
 library(shiny)
 library(shinyWidgets)
 library(shinydashboard)
@@ -116,15 +116,7 @@ shinyServer(function(input, output, session) {
     req(input$price_range)
     req(input$odo_range)
     # creat heat map
-    
-    fun_color_range <- colorRampPalette(c("blue", "red"))
-    color <- data.frame(odo = seq(
-      min(total_data_parsed$Nobrauk., na.rm = TRUE),
-      max(total_data_parsed$Nobrauk., na.rm = TRUE),
-      by = 100000
-    ))
-    color$color <- fun_color_range(nrow(color))
-    
+
     if (input$car_brand == "All") {
       filtered_df <-  total_data_parsed %>%
         #temporarly fix NA values in odometer
@@ -169,8 +161,8 @@ shinyServer(function(input, output, session) {
             Gads,
             breaks = c(-Inf, seq(1990, 2023, by =
                                    1)),
-            labels = as.character(c(seq(
-              1990, 2023, by =
+            labels = as.character(c("up to 1990",seq(
+              1991, 2023, by =
                 1
             )))
           ),
@@ -178,7 +170,23 @@ shinyServer(function(input, output, session) {
         ) %>%
         group_by(labels) %>%
         summarise(x = floor(mean(Cena)))
-      
+
+      # group by year and count cars
+      df_by_year_and_quantity <- filtered_df %>%
+        mutate(
+          labels = cut(
+            Gads,
+            breaks = c(-Inf, seq(1990, 2023, by =
+                                   1)),
+            labels = as.character(c("up to 1990",seq(
+              1991, 2023, by =
+                1
+            )))
+          ),
+          ordered_result = TRUE
+        ) %>%
+        group_by(labels) %>%
+          summarise(x = n()) 
       
       df <-
         jsonlite::toJSON(
@@ -187,7 +195,8 @@ shinyServer(function(input, output, session) {
             'bar_stacked',
             df_price_vs_range,
             df_by_brand_total,
-            df_by_year_and_price
+            df_by_year_and_price,
+            df_by_year_and_quantity
           )
         )
     } else {
@@ -230,14 +239,13 @@ shinyServer(function(input, output, session) {
         summarise(x = n()) %>%
         ungroup() %>%
         arrange(-x)
-      if (input$car_model != 'All') {
-        df_by_brand_total <- filtered_df %>%
+
+      # group by year and count cars
+      df_by_year_and_quantity <- filtered_df %>%
           filter(Modelis %in% models) %>%
           group_by(labels = Gads) %>%
-          summarise(x = n()) #%>%
-        # ungroup() %>%
-        # arrange(-x)
-      }
+          summarise(x = n()) 
+      
       
       # distribution by year and its mean price
       df_by_year_and_price <- filtered_df %>%
@@ -265,7 +273,8 @@ shinyServer(function(input, output, session) {
             'bar_stacked',
             df_price_vs_range,
             df_by_brand_total,
-            df_by_year_and_price
+            df_by_year_and_price,
+            df_by_year_and_quantity
           )
         )
     }
@@ -279,27 +288,32 @@ shinyServer(function(input, output, session) {
     session$sendCustomMessage(type = "dataChartJS_scatter", message = dataChartJS_scatter())
   )
   # return value from JS to update input$car_brand
-  # observeEvent(input$returnFromUI, {
-  #   id = input$returnFromUI$id
-  #   if (id == "chart-stats-0" & input$car_brand == 'All') {
-  #     selected = input$returnFromUI$x_value
-  #     updateSelectInput(inputId = 'car_brand', selected = selected)
-  #   } else if (id == "chart-stats-0") {
-  #     selected = input$returnFromUI$x_value
-  #     updateSelectInput(inputId = 'car_model', selected = selected)
-  #   }
-  #   if (id == "chart-stats-1") {
-  #     values = c(
-  #       as.numeric(input$returnFromUI$x_value) - 10000,
-  #       as.numeric(input$returnFromUI$x_value)
-  #     )
-  #     if (!identical(values, numeric(0))) {
-  #       updateNumericRangeInput(inputId = 'odo_range', value = values)
-  #     }
-  #   }
-    
-  # })
-  
+  observeEvent(input$returnFromUI, {
+    id = input$returnFromUI$id
+    # if (id == "chart-stats-0" & input$car_brand == 'All') {
+    #   selected = input$returnFromUI$x_value
+    #   updateSelectInput(inputId = 'car_brand', selected = selected)
+    # } else if (id == "chart-stats-0") {
+    #   selected = input$returnFromUI$x_value
+    #   updateSelectInput(inputId = 'car_model', selected = selected)
+    # }
+    # if (id == "chart-stats-1") {
+    #   values = c(
+    #     as.numeric(input$returnFromUI$x_value) - 10000,
+    #     as.numeric(input$returnFromUI$x_value)
+    #   )
+    #   if (!identical(values, numeric(0))) {
+    #     updateNumericRangeInput(inputId = 'odo_range', value = values)
+    #   }
+    # }
+    print(input$returnFromUI$activeBar)
+    if (id == "chart-stats-0" && length(input$returnFromUI$activeBar) == 1 ) {
+      insertTab("tabset1",tabPanel(input$returnFromUI$x_value,"test"), target = "Brands Distribution" )
+    } else {
+      removeTab("tabset1", target = input$returnFromUI$x_value)
+    }
+  })
+
   # send all filters from dashboard
   observe(session$sendCustomMessage(type = "filterData",
                                     message = jsonlite::toJSON(
@@ -331,7 +345,7 @@ shinyServer(function(input, output, session) {
         div(class = "charts",
             div(class = "chart"))
       ),
-      #tabPanel("Models Distribution")
+      # tabPanel("Models Distribution","test")
     ))
   output$car_chart2 <-
     renderUI(tabBox(id = "tabset2",
@@ -350,5 +364,13 @@ shinyServer(function(input, output, session) {
                     ),
                    # tabPanel("Tab2")
                     ))
+  output$car_chart4 <-
+    renderUI(tabBox(id = "tabset3",
+                    tabPanel(
+                      "Year Distribution",       div(class = "charts",
+                                         div(class = "chart"))
+                    ),
+                   # tabPanel("Tab2")
+                    ))                  
   
 })
