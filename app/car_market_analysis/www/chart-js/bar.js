@@ -4,8 +4,8 @@
 
     var ctx = document.getElementById(canvasId);
     var gradient = ctx.getContext("2d").createLinearGradient(0, 0, 0, 400);
-    gradient.addColorStop(1, 'rgb(85, 60, 154)');   
-    gradient.addColorStop(0, 'rgb(238, 75, 43)');
+    gradient.addColorStop(1, 'rgba(85, 60, 154,1)');   
+    gradient.addColorStop(0, 'rgba(238, 75, 43,1)');
 
     var TITLE = title
   
@@ -114,6 +114,7 @@
           // otherwise return back chart id, and x + y value to Shiny in order to redraw/refilter data
           onClick: function(c,i) {
             e = i[0];
+            // send back to SHINY
             if (e !== undefined) {
               var id = this['canvas'].id;
               var x_value = this.data.labels[e._index];
@@ -124,8 +125,15 @@
                 x_value,
                 y_value,
               })
-            }
-        }
+              // only for last chart
+           if (id == 'chart-stats-0' && !isNaN(x_value)) {
+            // change color of clicked 
+            this.data.datasets[0].backgroundColor = Array(this.data.labels.length).fill('#cccccc');
+            this.data.datasets[0].backgroundColor[e._index] = gradient;
+            this.update()
+           }
+          }
+          }
         }
       });
   }

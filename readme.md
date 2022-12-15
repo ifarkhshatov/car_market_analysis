@@ -90,3 +90,10 @@ So the log will be like:
 [1] "https://www.ss.com//lv/transport/cars/chrysler/sell/page7.html"
 ```
 at the end there will be inital data frame:
+![initial data frame](./md/total_data_parsed_df.PNG)
+
+So. With this data we can work. And it is gonna to be fun!
+We do create new ``Shiny.App`` with the concept to analize data which we parsed. I skip general info regarding ``Shiny`` application, but will place some useful highlights.
+
+##### How to connect Shiny with JS
+##### How to send and receive data from JS

@@ -20,9 +20,7 @@ shinyServer(function(input, output, session) {
     )
   })
   
-  
-  
-  
+
   # #MODEL SELECTOR
   output$car_model <- renderUI({
     # waiting until first one is generated
