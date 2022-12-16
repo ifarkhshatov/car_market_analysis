@@ -2,7 +2,7 @@ options(dplyr.summarise.inform = FALSE)
 options(scipen = 999)
 # options(browser = 'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe')
 # options(shiny.launch.browser = .rs.invokeShinyWindowExternal)
-    
+
 library(shiny)
 library(shinyWidgets)
 library(shinydashboard)
@@ -16,28 +16,29 @@ shinyServer(function(input, output, session) {
       "car_brand",
       label = h4("Select Brand:"),
       selected = selected,
-      choices = c("All", unique(total_data_parsed$brand))
+      choices = c("All", unique(total_data_parsed$brand)),
+      multiple = TRUE
     )
   })
-  
-  
+
+
   # #MODEL SELECTOR
   output$car_model <- renderUI({
     # waiting until first one is generated
     req(input$car_brand)
     input$car_brand
-    
+
     if (input$car_brand == "All") {
       choices = "All"
     } else {
       choices = c("All", unique(total_data_parsed$Modelis[total_data_parsed$brand %in% input$car_brand]))
     }
-    
+
     selectInput("car_model",
                 label = h4("Select Model:"),
                 choices = choices) #multiple = TRUE can used for multiple selection
   })
-  
+
   #YEAR RANGE SLIDER
   output$year_range <- renderUI({
     req(input$car_brand)
@@ -61,7 +62,7 @@ shinyServer(function(input, output, session) {
       step = 1
     )
   })
-  
+
   #Price range
   output$price_range <- renderUI({
     req(input$car_brand)
@@ -75,9 +76,9 @@ shinyServer(function(input, output, session) {
       sep = "",
       step = 500
     )
-    
+
   })
-  
+
   # Odometer range
   output$odo_range <- renderUI({
     req(input$car_brand)
@@ -91,15 +92,15 @@ shinyServer(function(input, output, session) {
       sep = "",
       step = 5000
     )
-    
+
   })
-  
+
   # reset data
   output$reset <- renderUI({
     actionButton(label = 'Reset filters', "reset")
-    
+
   })
-  
+
   # reactive event e.g. parse data to html to make it workable with chart.js
   dataChartJS_scatter <- eventReactive({
     # any changes in input will adjust table
@@ -118,15 +119,15 @@ shinyServer(function(input, output, session) {
     # creat heat map
 
     if (input$car_brand == "All") {
-      filtered_df <-  total_data_parsed %>%
-        #temporarly fix NA values in odometer
-        mutate(Nobrauk. = ifelse(is.na(Nobrauk.), -1, Nobrauk.)) %>%
+      filtered_df <- total_data_parsed %>%
+      #temporarly fix NA values in odometer
+      mutate(Nobrauk. = ifelse(is.na(Nobrauk.), -1, Nobrauk.)) %>%
         filter(Gads %in% seq(input$year_range[1], input$year_range[2])) %>%
         filter(Cena > input$price_range[1] &
                  Cena < input$price_range[2]) %>%
         filter(Nobrauk. >= input$odo_range[1] &
                  Nobrauk. <= input$odo_range[2])
-      
+
       # Chart where distribution of avg price and odometer value
       df_price_vs_range <- filtered_df %>%
         select(odo = `Nobrauk.`,
@@ -135,7 +136,7 @@ shinyServer(function(input, output, session) {
           labels = cut(
             odo,
             breaks = c(-Inf, seq(0, 250000, by =
-                                   10000), +Inf),
+                                   10000), + Inf),
             labels = as.character(c("No data", seq(0, 250000, by =
                                                      10000)))
           ),
@@ -149,10 +150,10 @@ shinyServer(function(input, output, session) {
         group_by(labels = brand) %>%
         summarise(x = n()) %>%
         ungroup() %>%
-        # mutate(labels = ifelse(x < 100, 'Other', labels)) %>%
-        # group_by(labels) %>%
-        # summarise(x = sum(x)) %>%
-        arrange(-x) #%>%
+      # mutate(labels = ifelse(x < 100, 'Other', labels)) %>%
+      # group_by(labels) %>%
+      # summarise(x = sum(x)) %>%
+      arrange(-x) #%>%
       # ungroup()
       # distribution by year and its mean price
       df_by_year_and_price <- filtered_df %>%
@@ -161,7 +162,7 @@ shinyServer(function(input, output, session) {
             Gads,
             breaks = c(-Inf, seq(1990, 2023, by =
                                    1)),
-            labels = as.character(c("up to 1990",seq(
+            labels = as.character(c("up to 1990", seq(
               1991, 2023, by =
                 1
             )))
@@ -178,7 +179,7 @@ shinyServer(function(input, output, session) {
             Gads,
             breaks = c(-Inf, seq(1990, 2023, by =
                                    1)),
-            labels = as.character(c("up to 1990",seq(
+            labels = as.character(c("up to 1990", seq(
               1991, 2023, by =
                 1
             )))
@@ -186,8 +187,8 @@ shinyServer(function(input, output, session) {
           ordered_result = TRUE
         ) %>%
         group_by(labels) %>%
-          summarise(x = n()) 
-      
+          summarise(x = n())
+
       df <-
         jsonlite::toJSON(
           list(
@@ -205,14 +206,14 @@ shinyServer(function(input, output, session) {
       } else {
         models <- input$car_model
       }
-      
-      
-      filtered_df <-  total_data_parsed %>%
+
+
+      filtered_df <- total_data_parsed %>%
         filter(Gads %in% seq(input$year_range[1], input$year_range[2])) %>%
         filter(Cena > input$price_range[1] &
                  Cena < input$price_range[2]) %>%
         filter(brand == input$car_brand)
-      
+
       # Chart where distribution of avg price and odometer value
       df_price_vs_range <- filtered_df %>%
         filter(Modelis %in% models) %>%
@@ -222,7 +223,7 @@ shinyServer(function(input, output, session) {
           labels = cut(
             odo,
             breaks = c(-Inf, seq(0, 250000, by =
-                                   10000), +Inf),
+                                   10000), + Inf),
             labels = as.character(c(-Inf, seq(0, 250000, by =
                                                 10000)))
           ),
@@ -231,8 +232,8 @@ shinyServer(function(input, output, session) {
         group_by(labels) %>%
         summarise(x = floor(mean(price))) %>%
         ungroup()
-      
-      
+
+
       # group by brand/model and it's quantity
       df_by_brand_total <- filtered_df %>%
         group_by(labels = Modelis) %>%
@@ -244,9 +245,9 @@ shinyServer(function(input, output, session) {
       df_by_year_and_quantity <- filtered_df %>%
           filter(Modelis %in% models) %>%
           group_by(labels = Gads) %>%
-          summarise(x = n()) 
-      
-      
+          summarise(x = n())
+
+
       # distribution by year and its mean price
       df_by_year_and_price <- filtered_df %>%
         filter(Modelis %in% models) %>%
@@ -264,8 +265,8 @@ shinyServer(function(input, output, session) {
         ) %>%
         group_by(labels) %>%
         summarise(x = floor(mean(Cena)))
-      
-      
+
+
       df <-
         jsonlite::toJSON(
           list(
@@ -278,39 +279,45 @@ shinyServer(function(input, output, session) {
           )
         )
     }
-    
-    
+
+
   })
-  
+
   # sending json object of filtered countries data
-  
   observe(
     session$sendCustomMessage(type = "dataChartJS_scatter", message = dataChartJS_scatter())
   )
   # return value from JS to update input$car_brand
   observeEvent(input$returnFromUI, {
     id = input$returnFromUI$id
-    # if (id == "chart-stats-0" & input$car_brand == 'All') {
-    #   selected = input$returnFromUI$x_value
-    #   updateSelectInput(inputId = 'car_brand', selected = selected)
-    # } else if (id == "chart-stats-0") {
-    #   selected = input$returnFromUI$x_value
-    #   updateSelectInput(inputId = 'car_model', selected = selected)
-    # }
-    # if (id == "chart-stats-1") {
-    #   values = c(
-    #     as.numeric(input$returnFromUI$x_value) - 10000,
-    #     as.numeric(input$returnFromUI$x_value)
-    #   )
-    #   if (!identical(values, numeric(0))) {
-    #     updateNumericRangeInput(inputId = 'odo_range', value = values)
-    #   }
-    # }
-    print(input$returnFromUI$activeBar)
-    if (id == "chart-stats-0" && length(input$returnFromUI$activeBar) == 1 ) {
-      insertTab("tabset1",tabPanel(input$returnFromUI$x_value,"test"), target = "Brands Distribution" )
-    } else {
-      removeTab("tabset1", target = input$returnFromUI$x_value)
+    x_value = input$returnFromUI$x_value
+    activeBar = input$returnFromUI$activeBar
+
+    # open tab with model distribution if selected 
+    if (id == "chart-stats-0" && x_value %in% activeBar) {
+
+      insertTab("tabset1", tabPanel(x_value, tab = div(class = "charts", div(class = "chart"))), target = "Brands Distribution")
+
+      test_data <- list()
+      for (i in activeBar) {
+        test_data[[i]] <- total_data_parsed %>%
+        filter(Gads %in% seq(input$year_range[1], input$year_range[2])) %>%
+        filter(Cena > input$price_range[1] &
+                 Cena < input$price_range[2]) %>%
+        filter(brand == i) %>%
+        group_by(labels = Modelis) %>%
+        summarise(x = n()) %>%
+        ungroup() %>%
+        arrange(-x)
+      }
+
+      session$sendCustomMessage(type = "tabModelOpened", message =   jsonlite::toJSON(test_data))
+
+      # if double click to close opened tabs of models
+    } else if (id == "chart-stats-0" && length(activeBar) == 0) {
+      for (i in unique(total_data_parsed$brand)) {
+        removeTab("tabset1", target = i)
+      }
     }
   })
 
@@ -324,8 +331,8 @@ shinyServer(function(input, output, session) {
                                         input$price_range
                                       )
                                     )))
-  
-  
+
+
   # Reset filter
   observe({
     input$reset
@@ -336,16 +343,15 @@ shinyServer(function(input, output, session) {
     updateNumericRangeInput(session, inputId = 'price_range', value = c(0, 100000))
     updateSliderInput(session, inputId = 'year_range', value = c(1949, 2022))
   })
-  
-  output$car_stats_dashboard <-
+
+  output$car_chart1 <-
     renderUI(tabBox(
       id = "tabset1",
       tabPanel(
         "Brands Distribution",
         div(class = "charts",
             div(class = "chart"))
-      ),
-      # tabPanel("Models Distribution","test")
+      )
     ))
   output$car_chart2 <-
     renderUI(tabBox(id = "tabset2",
@@ -353,24 +359,21 @@ shinyServer(function(input, output, session) {
                       "Ø Price to Odometer",
                       div(class = "charts",
                           div(class = "chart"))
-                    ),
-                    #tabPanel("Tab2")
+                    )
                     ))
   output$car_chart3 <-
     renderUI(tabBox(id = "tabset2",
                     tabPanel(
-                      "Ø Price to Year",       div(class = "charts",
+                      "Ø Price to Year", div(class = "charts",
                                          div(class = "chart"))
-                    ),
-                   # tabPanel("Tab2")
+                    )
                     ))
   output$car_chart4 <-
     renderUI(tabBox(id = "tabset3",
                     tabPanel(
-                      "Year Distribution",       div(class = "charts",
+                      "Year Distribution", div(class = "charts",
                                          div(class = "chart"))
-                    ),
-                   # tabPanel("Tab2")
-                    ))                  
-  
+                    )
+                    ))
+
 })

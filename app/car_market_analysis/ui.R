@@ -17,7 +17,7 @@ dashboardPage(
       tags$script(src = "./chart.js"),
       tags$script(src = "./chart-js/bar.js")
     ), 
-    uiOutput("car_stats_dashboard"),
+    uiOutput("car_chart1"),
     uiOutput("car_chart2"),
     uiOutput("car_chart3"),
     uiOutput("car_chart4"),

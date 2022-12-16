@@ -1,7 +1,6 @@
 
 
 function barChart(canvasId, dataChartFromShiny, title, horizontal, stacked, labels, x_axis_label, y_axis_label, show_grid, show_legend) {
-
   var ctx = document.getElementById(canvasId);
   var gradient = ctx.getContext("2d").createLinearGradient(0, 0, 0, 400);
   gradient.addColorStop(1, 'rgba(85, 60, 154,1)');
@@ -146,7 +145,7 @@ function barChart(canvasId, dataChartFromShiny, title, horizontal, stacked, labe
             y_value,
             activeBar
           })
-
+          
           console.log(activeBar)
           //  }
         }
