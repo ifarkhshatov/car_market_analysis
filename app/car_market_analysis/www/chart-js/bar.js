@@ -2,9 +2,26 @@
 
 function barChart(canvasId, dataChartFromShiny, title, horizontal, stacked, labels, x_axis_label, y_axis_label, show_grid, show_legend) {
   var ctx = document.getElementById(canvasId);
+  // make colors
   var gradient = ctx.getContext("2d").createLinearGradient(0, 0, 0, 400);
   gradient.addColorStop(1, 'rgba(85, 60, 154,1)');
   gradient.addColorStop(0, 'rgba(238, 75, 43,1)');
+  
+// if tabData is not yet existed then we skip changes in color
+  if (typeof tabData !== 'undefined') {
+    // should be same chart as selected
+      if (tabData[2][0] == canvasId ) {
+    // check if should be grey colors
+    var backgroundColorChart = Array(dataChartFromShiny.length).fill('#cccccc');
+    tabData[1].forEach((x) => {
+      backgroundColorChart[dataChartFromShiny.map(x => x.labels).indexOf(x)] = gradient
+    })
+      } else {
+        var backgroundColorChart = gradient       
+      }
+  } else {
+    var backgroundColorChart = gradient  
+  }
   // get active bar id in onClick
   var activeBar = [];
   var TITLE = title
@@ -36,7 +53,7 @@ function barChart(canvasId, dataChartFromShiny, title, horizontal, stacked, labe
     data: dataChartFromShiny.map(x => x.x),
     fill: true,
     label: TITLE,
-    backgroundColor: gradient,
+    backgroundColor: backgroundColorChart,
   }];
 
   var barChartData = {

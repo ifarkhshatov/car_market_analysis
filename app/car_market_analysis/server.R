@@ -43,21 +43,15 @@ shinyServer(function(input, output, session) {
   output$year_range <- renderUI({
     req(input$car_brand)
     input$car_brand
-    if (input$car_brand != "All") {
-      min_year <-
-        min(as.integer(total_data_parsed$Gads[total_data_parsed$brand %in% input$car_brand]))
-      max_year <-
-        max(as.integer(total_data_parsed$Gads[total_data_parsed$brand %in% input$car_brand]))
-    } else {
-      min_year <- min(as.integer(total_data_parsed$Gads))
-      max_year <- max(as.integer(total_data_parsed$Gads))
-    }
+
+    # there is no sense to parse data, just take 1900 till 2023
+
     sliderInput(
       "year_range",
       h4("Select year range:"),
-      min = min_year - 1,
-      max = max_year + 1,
-      value = c(min_year, max_year),
+      min = 1900,
+      max = as.numeric(format(Sys.Date(), format = "%Y"))  + 1,
+      value = c(1940, as.numeric(format(Sys.Date(), format = "%Y"))),
       sep = "",
       step = 1
     )
@@ -100,36 +94,69 @@ shinyServer(function(input, output, session) {
     actionButton(label = 'Reset filters', "reset")
 
   })
-
-  # reactive event e.g. parse data to html to make it workable with chart.js
-  dataChartJS_scatter <- eventReactive({
-    # any changes in input will adjust table
-    input$year_range
-    input$car_brand
-    input$car_model
+  # Main data filter which relates to to all chart
+  filtered_df <- eventReactive(
+    {input$year_range
     input$price_range
-    input$odo_range
-  }, {
-    # it is required only brand car to do initial dash statistics
-    req(input$car_brand)
-    req(input$car_model)
-    req(input$year_range)
-    req(input$price_range)
-    req(input$odo_range)
-    # creat heat map
+    input$odo_range}, {
 
-    if (input$car_brand == "All") {
-      filtered_df <- total_data_parsed %>%
-      #temporarly fix NA values in odometer
-      mutate(Nobrauk. = ifelse(is.na(Nobrauk.), -1, Nobrauk.)) %>%
+    total_data_parsed %>%
+    #temporarly fix NA values in odometer
+    mutate(Nobrauk. = ifelse(is.na(Nobrauk.), -1, Nobrauk.)) %>%
         filter(Gads %in% seq(input$year_range[1], input$year_range[2])) %>%
         filter(Cena > input$price_range[1] &
                  Cena < input$price_range[2]) %>%
         filter(Nobrauk. >= input$odo_range[1] &
                  Nobrauk. <= input$odo_range[2])
+  })
 
-      # Chart where distribution of avg price and odometer value
-      df_price_vs_range <- filtered_df %>%
+         #Main chart, since now it can be affected by other filters but we need only: year, odo, price
+  dataChartJS_parent_charts <- eventReactive(filtered_df(), {
+   # group by brand and it's quantity
+    dataChartJS_parent_charts <- filtered_df() %>%
+        group_by(labels = brand) %>%
+        summarise(x = n()) %>%
+        ungroup() %>%
+    # mutate(labels = ifelse(x < 100, 'Other', labels)) %>%
+    # group_by(labels) %>%
+    # summarise(x = sum(x)) %>%
+    arrange(-x) #%>%
+    # ungroup()
+      jsonlite::toJSON(dataChartJS_parent_charts)
+     })
+
+
+
+  # reactive event e.g. parse data to html to make it workable with chart.js
+  dataChartJS_child_charts <- eventReactive({
+    # any changes in input will adjust table
+    input$car_brand
+    input$car_model
+    filtered_df()
+  }, {
+    # it is required only brand car to do initial dash statistics
+    req(input$car_brand)
+    req(input$car_model)
+    req(filtered_df())
+
+   # distribution by year and its mean price
+    df_by_year_and_price <- filtered_df() %>%
+        mutate(
+          labels = cut(
+            Gads,
+            breaks = c(-Inf, seq(1990, 2023, by =
+                                   1)),
+            labels = as.character(c("up to 1990", seq(
+              1991, 2023, by =
+                1
+            )))
+          ),
+          ordered_result = TRUE
+        ) %>%
+        group_by(labels) %>%
+        summarise(x = floor(mean(Cena)))
+    # Chart where distribution of avg price and odometer value
+    df_price_vs_range <- filtered_df() %>%
         select(odo = `Nobrauk.`,
                price = Cena) %>%
         mutate(
@@ -145,35 +172,9 @@ shinyServer(function(input, output, session) {
         group_by(labels) %>%
         summarise(x = floor(mean(price))) %>%
         ungroup()
-      # group by brand and it's quantity
-      df_by_brand_total <- filtered_df %>%
-        group_by(labels = brand) %>%
-        summarise(x = n()) %>%
-        ungroup() %>%
-      # mutate(labels = ifelse(x < 100, 'Other', labels)) %>%
-      # group_by(labels) %>%
-      # summarise(x = sum(x)) %>%
-      arrange(-x) #%>%
-      # ungroup()
-      # distribution by year and its mean price
-      df_by_year_and_price <- filtered_df %>%
-        mutate(
-          labels = cut(
-            Gads,
-            breaks = c(-Inf, seq(1990, 2023, by =
-                                   1)),
-            labels = as.character(c("up to 1990", seq(
-              1991, 2023, by =
-                1
-            )))
-          ),
-          ordered_result = TRUE
-        ) %>%
-        group_by(labels) %>%
-        summarise(x = floor(mean(Cena)))
 
-      # group by year and count cars
-      df_by_year_and_quantity <- filtered_df %>%
+    # group by year and count cars
+    df_by_year_and_quantity <- filtered_df() %>%
         mutate(
           labels = cut(
             Gads,
@@ -189,103 +190,26 @@ shinyServer(function(input, output, session) {
         group_by(labels) %>%
           summarise(x = n())
 
-      df <-
-        jsonlite::toJSON(
+    df <-
+         jsonlite::toJSON(
           list(
             '',
             'bar_stacked',
             df_price_vs_range,
-            df_by_brand_total,
-            df_by_year_and_price,
-            df_by_year_and_quantity
-          )
-        )
-    } else {
-      if (input$car_model == "All") {
-        models <- unique(total_data_parsed$Modelis)
-      } else {
-        models <- input$car_model
-      }
-
-
-      filtered_df <- total_data_parsed %>%
-        filter(Gads %in% seq(input$year_range[1], input$year_range[2])) %>%
-        filter(Cena > input$price_range[1] &
-                 Cena < input$price_range[2]) %>%
-        filter(brand == input$car_brand)
-
-      # Chart where distribution of avg price and odometer value
-      df_price_vs_range <- filtered_df %>%
-        filter(Modelis %in% models) %>%
-        select(odo = `Nobrauk.`,
-               price = Cena) %>%
-        mutate(
-          labels = cut(
-            odo,
-            breaks = c(-Inf, seq(0, 250000, by =
-                                   10000), + Inf),
-            labels = as.character(c(-Inf, seq(0, 250000, by =
-                                                10000)))
-          ),
-          ordered_result = TRUE
-        ) %>%
-        group_by(labels) %>%
-        summarise(x = floor(mean(price))) %>%
-        ungroup()
-
-
-      # group by brand/model and it's quantity
-      df_by_brand_total <- filtered_df %>%
-        group_by(labels = Modelis) %>%
-        summarise(x = n()) %>%
-        ungroup() %>%
-        arrange(-x)
-
-      # group by year and count cars
-      df_by_year_and_quantity <- filtered_df %>%
-          filter(Modelis %in% models) %>%
-          group_by(labels = Gads) %>%
-          summarise(x = n())
-
-
-      # distribution by year and its mean price
-      df_by_year_and_price <- filtered_df %>%
-        filter(Modelis %in% models) %>%
-        mutate(
-          labels = cut(
-            Gads,
-            breaks = c(-Inf, seq(1990, 2023, by =
-                                   1)),
-            labels = as.character(c(seq(
-              1990, 2023, by =
-                1
-            )))
-          ),
-          ordered_result = TRUE
-        ) %>%
-        group_by(labels) %>%
-        summarise(x = floor(mean(Cena)))
-
-
-      df <-
-        jsonlite::toJSON(
-          list(
             '',
-            'bar_stacked',
-            df_price_vs_range,
-            df_by_brand_total,
             df_by_year_and_price,
             df_by_year_and_quantity
           )
         )
-    }
-
-
   })
 
-  # sending json object of filtered countries data
+  # sending json object of filtered depended data
   observe(
-    session$sendCustomMessage(type = "dataChartJS_scatter", message = dataChartJS_scatter())
+    session$sendCustomMessage(type = "dataChartJS_child_charts", message = dataChartJS_child_charts()  ),
+  )
+  # sending json object of filtered parent data (BRAND VS QUANTITY)
+  observe(
+    session$sendCustomMessage(type = "dataChartJS_parent_charts", message = dataChartJS_parent_charts() ),
   )
   # return value from JS to update input$car_brand
   observeEvent(input$returnFromUI, {
@@ -293,6 +217,15 @@ shinyServer(function(input, output, session) {
     x_value = input$returnFromUI$x_value
     activeBar = input$returnFromUI$activeBar
 
+    # option to click on bar either change on menu CAR BRAND, now can be multiple
+    if (id == "chart-stats-0") {
+      if (length(activeBar) == 0) {
+        print('All')
+      } else {
+        print(activeBar)
+      }
+      updateSelectInput(inputId = 'car_brand', choices = activeBar, selected = activeBar)
+    }
     # open tab with model distribution if selected 
     if (id == "chart-stats-0" && x_value %in% activeBar) {
 
@@ -311,7 +244,7 @@ shinyServer(function(input, output, session) {
         arrange(-x)
       }
 
-      session$sendCustomMessage(type = "tabModelOpened", message =   jsonlite::toJSON(test_data))
+      session$sendCustomMessage(type = "tabModelOpened", message = jsonlite::toJSON(list(test_data, unlist(activeBar), id) ))
 
       # if double click to close opened tabs of models
     } else if (id == "chart-stats-0" && length(activeBar) > 5) {
@@ -321,7 +254,7 @@ shinyServer(function(input, output, session) {
       for (i in unique(total_data_parsed$brand)) {
         removeTab("tabset1", target = i)
       }
-    
+
     }
   })
 
