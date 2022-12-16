@@ -145,22 +145,9 @@ function barChart(canvasId, dataChartFromShiny, title, horizontal, stacked, labe
             y_value,
             activeBar
           })
-          
-          console.log(activeBar)
           //  }
         }
       }
     }
   });
 }
-
-
-//   var options = {
-//     responsive: true,
-//     datasetStrokeWidth : 3,
-//     pointDotStrokeWidth : 4,
-//     tooltipFillColor: "rgba(0,0,0,0.8)",
-//     tooltipFontStyle: "bold",
-//     tooltipTemplate: "<%if (label){%><%=label + ' hod' %>: <%}%><%= value + '°C' %>",
-//     scaleLabel : "<%= Number(value).toFixed(0).replace('.', ',') + '°C'%>"
-// };

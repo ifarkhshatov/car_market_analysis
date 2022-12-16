@@ -7,15 +7,17 @@ Shiny.addCustomMessageHandler("filterData", function (data) {
 
 // data for open tabs 
 
-Shiny.addCustomMessageHandler("tabModelOpened", function(data){
-    tabData = data
-    setTimeout(1000)
-    for (var i = 0; i < Object.keys(tabData).length; i++) {
-       var brand = Object.keys(tabData)[i]
-        var dataBrand  = data[brand]
-        var id = 4+i;
-        drawChart('.chart', dataBrand, 'bar', brand, id, false, false, 'price', 'Car Brand', 'Count', true, false); 
-    }
+
+    Shiny.addCustomMessageHandler("tabModelOpened", function(data){
+        tabData = data
+    // need to wait a bit untill new tab appears
+    setTimeout(() => {
+        for (var i = 0; i < Object.keys(tabData).length; i++) {
+           var brand = Object.keys(tabData)[i]
+            var dataBrand  = data[brand]
+            drawChart('.chart-brand', dataBrand, 'bar', brand, i, false, false, 'price', 'Car Brand', 'Count', true, false); 
+        }
+    },  500);
 })
 
 // Getting info from server
@@ -30,7 +32,7 @@ Shiny.addCustomMessageHandler("dataChartJS_scatter", function (data) {
 
 // find div clean and draw figure there
 function drawChart(divName, dataChartFromShiny, chartType, chartLabel, ids,horizontal, stacked, labels, x_axis_label, y_axis_label, show_grid, show_legend) {
-    var canvasId = 'chart-stats-' + ids
+    var canvasId = divName == ".chart" ? 'chart-stats-' + ids : 'chart-brand-'+ids
     $(divName).eq(ids).empty();
     $(divName).eq(ids).append(
         '<canvas id="' + canvasId + '"></canvas>'

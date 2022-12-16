@@ -296,7 +296,7 @@ shinyServer(function(input, output, session) {
     # open tab with model distribution if selected 
     if (id == "chart-stats-0" && x_value %in% activeBar) {
 
-      insertTab("tabset1", tabPanel(x_value, tab = div(class = "charts", div(class = "chart"))), target = "Brands Distribution")
+      insertTab("tabset1", tabPanel(x_value, div(class = "charts", div(class = "chart-brand"))), target = "Brands Distribution")
 
       test_data <- list()
       for (i in activeBar) {
@@ -314,10 +314,14 @@ shinyServer(function(input, output, session) {
       session$sendCustomMessage(type = "tabModelOpened", message =   jsonlite::toJSON(test_data))
 
       # if double click to close opened tabs of models
+    } else if (id == "chart-stats-0" && length(activeBar) > 5) {
+
     } else if (id == "chart-stats-0" && length(activeBar) == 0) {
+
       for (i in unique(total_data_parsed$brand)) {
         removeTab("tabset1", target = i)
       }
+    
     }
   })
 
