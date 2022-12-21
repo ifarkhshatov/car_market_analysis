@@ -8,20 +8,20 @@ function barChart(canvasId, dataChartFromShiny, title, horizontal, stacked, labe
   gradient.addColorStop(0, 'rgba(238, 75, 43,1)');
   
 // if tabData is not yet existed then we skip changes in color
-  if (typeof tabData !== 'undefined') {
-    // should be same chart as selected
-      if (tabData[2][0] == canvasId ) {
-    // check if should be grey colors
-    var backgroundColorChart = Array(dataChartFromShiny.length).fill('#cccccc');
-    tabData[1].forEach((x) => {
-      backgroundColorChart[dataChartFromShiny.map(x => x.labels).indexOf(x)] = gradient
-    })
-      } else {
-        var backgroundColorChart = gradient       
-      }
-  } else {
+  // if (typeof tabData !== 'undefined') {
+  //   // should be same chart as selected
+  //     if (tabData[2][0] == canvasId ) {
+  //   // check if should be grey colors
+  //   var backgroundColorChart = Array(dataChartFromShiny.length).fill('#cccccc');
+  //   tabData[1].forEach((x) => {
+  //     backgroundColorChart[dataChartFromShiny.map(x => x.labels).indexOf(x)] = gradient
+  //   })
+  //     } else {
+  //       var backgroundColorChart = gradient       
+  //     }
+  // } else {
     var backgroundColorChart = gradient  
-  }
+  // }
   // get active bar id in onClick
   var activeBar = [];
   var TITLE = title
@@ -154,7 +154,7 @@ function barChart(canvasId, dataChartFromShiny, title, horizontal, stacked, labe
             activeBar.push(x_value);
           }
           this.update()
-
+          console.log(activeBar)
           // on click send back to shiny server data into input$returnFromUI in server.R
           Shiny.setInputValue('returnFromUI', {
             id,

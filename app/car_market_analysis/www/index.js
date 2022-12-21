@@ -29,13 +29,11 @@ Shiny.addCustomMessageHandler("dataChartJS_parent_charts", function (data) {
 
 Shiny.addCustomMessageHandler("dataChartJS_child_charts", function (data) {
     iss = data
-        // drawChart('.chart', data[0], 'bar', 'Market', 0, false, false, 'price', 'Car Brand', 'Count', true, false);
-        drawChart('.chart', data[4], 'bar', 'AVG Price to Year', 1, false, false, 'price', 'Year', 'Price', true, false);
-        drawChart('.chart', data[5], 'bar', 'Count to year', 3, false, false, 'price', 'Year', 'Count', true, false);
-        drawChart('.chart', data[2], 'bar', 'AVG Price to Odometer', 2, false, false, 'price', 'Odometer', 'Price', true, false);
+        drawChart('.chart', data[1], 'bar', 'AVG Price to Year', 1, false, false, 'price', 'Year', 'Price', true, false);
+        drawChart('.chart', data[2], 'bar', 'Count to year', 3, false, false, 'price', 'Year', 'Count', true, false);
+        drawChart('.chart', data[0], 'bar', 'AVG Price to Odometer', 2, false, false, 'price', 'Odometer', 'Price', true, false);
 
 })
-
 
 // find div clean and draw figure there
 function drawChart(divName, dataChartFromShiny, chartType, chartLabel, ids,horizontal, stacked, labels, x_axis_label, y_axis_label, show_grid, show_legend) {

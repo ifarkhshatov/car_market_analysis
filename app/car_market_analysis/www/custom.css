@@ -64,3 +64,7 @@ color: white
     font-weight: 600;
     padding: 3px 5px;
 }
+
+.skin-blue .sidebar a  {
+    color: #553c9a !important;
+}

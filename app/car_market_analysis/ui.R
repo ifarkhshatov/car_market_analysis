@@ -4,6 +4,7 @@ library( shinyWidgets )
 dashboardPage(
   dashboardHeader(title="Car data analysis"),
   dashboardSidebar(            # all ui stuff are developed in server side
+    uiOutput("empty_br"),
     uiOutput("car_brand"),
     uiOutput("car_model"),
     uiOutput("year_range"),
