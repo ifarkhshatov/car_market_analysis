@@ -99,5 +99,5 @@ We do create a new ``Shiny.App`` with the concept to analyse data which we parse
 ##### How to send and receive data from JS
 
 # Instruction will be finished soon, while the actual deployment of the current application version is in: 
-![Link to current dashboard version](https://ifarkhshatov.shinyapps.io/car_market_analysis/)
+https://ifarkhshatov.shinyapps.io/car_market_analysis
 
